@@ -12,12 +12,20 @@ public class Celda {
 
     
 
+    
+
     public void eliminarPared(int direccion) {
         paredes[direccion] = false;
     }
     
     public int [] getCoordenadas() {
         return new int[]{fila, columna};
+    }
+    public int getFila() {
+        return fila;
+    }
+    public int getColumna() {
+        return columna;
     }
 
     public boolean[] getParedes() {
