@@ -101,6 +101,15 @@ public class Generador {
     
     }
 
+    public Celda getCeldaEntrada(){
+        return celdaEntrada;
+    }
+    public Celda getCeldaSalida(){
+        return celdaSalida;
+    }
+
+    
+
 
     public void agregarCaminos(int porcentaje) {
         int totalCeldas = laberinto.celdas.size();
