@@ -1,103 +1,72 @@
-
 import java.util.List;
-
+import java.util.ArrayList;
 
 public class Laberinto {
-    //Implementacion del laberinto
 
-    public List<List<Celda>> listaAdyacencia;
     public List<Celda> celdas;
     
     public Laberinto() {
-        this.celdas = new java.util.ArrayList<>();
-        this.listaAdyacencia = new java.util.ArrayList<>();
+        this.celdas = new ArrayList<>();
     }
-     public Celda getCelda(int fila, int columna) {
+
+    public Celda getCelda(int fila, int columna) {
         for (Celda c : celdas) {
-            if(c.getFila() == fila && c.getColumna() == columna) {
+            if (c.getFila() == fila && c.getColumna() == columna) {
                 return c;
             }
         }
         return null;
     }
+
     public void agregarCelda(int fila, int columna) {
         if (existeCelda(fila, columna)) {
             return;
         }
-        Celda nuevaCelda = new Celda(fila, columna);
+        Celda nuevaCelda = new Celda(fila, columna); 
         celdas.add(nuevaCelda);
-        listaAdyacencia.add(new java.util.ArrayList<>());
-        
-   
     }
 
-   
     public boolean existeCelda(int fila, int columna) {
         return getCelda(fila, columna) != null;
     }
 
-    public void agregarConexion(Celda c1, Celda c2) {
-        //Conectar dos celdas contiguas
-        int dirC1=-1;
-        int dirC2=-1;
-        if (c1.getFila() == c2.getFila()) {
-            if (c1.getColumna() + 1 == c2.getColumna()) {
-                dirC1 = 1; // Derecha
-                dirC2 = 3; // Izquierda
-            } else if (c1.getColumna() - 1 == c2.getColumna()) {
-                dirC1 = 3; // Izquierda
-                dirC2 = 1; // Derecha
-            }
-        } else if (c1.getColumna() == c2.getColumna()) {
-            if (c1.getFila() + 1 == c2.getFila()) {
-                dirC1 = 2; // Abajo
-                dirC2 = 0; // Arriba
-            } else if (c1.getFila() - 1 == c2.getFila()) {
-                dirC1 = 0; // Arriba
-                dirC2 = 2; // Abajo
-            }
+    public void agregarConexion(Celda a, Celda b) {
+        int filaA = a.getFila();
+        int colA = a.getColumna();
+        int filaB = b.getFila();
+        int colB = b.getColumna();
+        //determina si a y b son adyacentes y si si, elimina la pared entre ellas
+        //b arriba de a
+        if (filaB == filaA - 1 && colB == colA) {
+            a.eliminarPared(0); 
+            b.eliminarPared(2);
         }
-        if(dirC1 != -1 && dirC2 != -1) {
-            c1.eliminarPared(dirC1);
-            c2.eliminarPared(dirC2);
-            int indiceC1 = celdas.indexOf(c1);
-            int indiceC2 = celdas.indexOf(c2);
-            listaAdyacencia.get(indiceC1).add(c2);
-            listaAdyacencia.get(indiceC2).add(c1);
+        //b a la derecha de a
+        else if (filaB == filaA && colB == colA + 1) {
+            a.eliminarPared(1);
+            b.eliminarPared(3); 
+        }
+        // b abajo de a
+        else if (filaB == filaA + 1 && colB == colA) {
+            a.eliminarPared(2); 
+            b.eliminarPared(0); 
+        }
+        // b a la izquierda de a
+        else if (filaB == filaA && colB == colA - 1) {
+            a.eliminarPared(3); 
+            b.eliminarPared(1);
         }
     }
 
-    public void recorrerCeldasDFS(Celda inicio) {
-        limpiarCeldas();
-        if (celdas.contains(inicio)) {
-            dfsRecorrer(inicio);
-        }
-    }
-
-    private void dfsRecorrer(Celda actual) {
-        actual.setVisitada(true);
-
-        int indiceActual = celdas.indexOf(actual);
-        List<Celda> vecinos = listaAdyacencia.get(indiceActual);
-
-        for (Celda vecino : vecinos) {
-            if (!vecino.isVisitada()) {
-                dfsRecorrer(vecino);
-            }
-        }
-    }
-
-    public void limpiarCeldas() {
+    public void limpiarCeldas() {//establece las celdas como no visitadas
         for (Celda c : celdas) {
             c.setVisitada(false);
         }
     }
 
-    
-    
-    
-
-
-
-    
+    public void reiniciarParedes() {//Coloca todas las paredes en true para reiniciar el laberinto
+        for (Celda c : celdas) {
+            c.reiniciarParedes();
+        }
+    }
 }

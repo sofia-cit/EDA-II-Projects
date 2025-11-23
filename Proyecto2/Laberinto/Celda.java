@@ -5,25 +5,22 @@ public class Celda {
     boolean paredes[] = {true, true, true, true};//N,E,S,O
     boolean visitada = false;
 
-
     public Celda(int fila, int columna) {
         setCoordenadas(fila, columna);
     }
-
-    
-
-    
 
     public void eliminarPared(int direccion) {
         paredes[direccion] = false;
     }
     
-    public int [] getCoordenadas() {
+    public int[] getCoordenadas() {
         return new int[]{fila, columna};
     }
+    
     public int getFila() {
         return fila;
     }
+    
     public int getColumna() {
         return columna;
     }
@@ -32,7 +29,7 @@ public class Celda {
         return paredes;
     }
 
-    public int [] setCoordenadas(int fila, int columna) {
+    public int[] setCoordenadas(int fila, int columna) {
         this.fila = fila;
         this.columna = columna;
         return new int[]{fila, columna};
@@ -46,5 +43,12 @@ public class Celda {
         this.visitada = visitada;
     }
 
-
+    public void reiniciarParedes() {
+        this.paredes = new boolean[]{true, true, true, true};
+    }
+    
+    @Override
+    public String toString() {
+        return "Celda[" + fila + "," + columna + "]";
+    }
 }

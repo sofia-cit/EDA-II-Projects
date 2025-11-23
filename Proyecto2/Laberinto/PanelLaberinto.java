@@ -1,156 +1,186 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
+public class PanelLaberinto extends JPanel {
 
-public class PanelLaberinto extends JPanel{
-
-    private final Generador controlador; //Logica del laberinto
-    private final int tamanoCelda = 30;
+    private final Generador controlador;
+    private final int tamanoCelda = 20;
     private int filas;
     private int columnas;
 
-    //Posicion jugador(coordenadas)
-    private int jugadorFila=0;
-    private int jugadorColumna=0;
+    private int jugadorFila;
+    private int jugadorColumna;
 
-    public PanelLaberinto(Generador controlador,int filas,int columnas){
-        this.controlador=controlador;
-        this.filas=filas;
-        this.columnas=columnas;
+    public PanelLaberinto(Generador controlador, int filas, int columnas){
+        this.controlador = controlador;
+        this.filas = filas;
+        this.columnas = columnas;
 
-        setPreferredSize(new Dimension(columnas*tamanoCelda, filas*tamanoCelda));
+        setPreferredSize(new Dimension(columnas * tamanoCelda, filas * tamanoCelda));
         setBackground(Color.WHITE);
-        
-        this.jugadorFila=controlador.getCeldaEntrada().getFila();
-        this.jugadorColumna=controlador.getCeldaEntrada().getColumna();
 
+        Celda entrada = controlador.getCeldaEntrada();
+        if (entrada != null) {
+            this.jugadorFila = entrada.getFila();
+            this.jugadorColumna = entrada.getColumna();
+        } else {
+            this.jugadorFila = 0;
+            this.jugadorColumna = 0;
+        }
 
+        setFocusable(true);
+        requestFocusInWindow();
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_W:
+                    case KeyEvent.VK_UP:
+                        moverJugador(-1, 0);
+                        break;
+                    case KeyEvent.VK_S:
+                    case KeyEvent.VK_DOWN:
+                        moverJugador(1, 0);
+                        break;
+                    case KeyEvent.VK_A:
+                    case KeyEvent.VK_LEFT:
+                        moverJugador(0, -1);
+                        break;
+                    case KeyEvent.VK_D:
+                    case KeyEvent.VK_RIGHT:
+                        moverJugador(0, 1);
+                        break;
+                }
+            }
+        });
     }
 
-    //Dibujar componentes
+    @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
-        Graphics2D g2d=(Graphics2D) g;
-
-        //Mejorar calidad de dibujo
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //Celdas y paredes
         dibujarLaberinto(g2d);
         dibujarEntradaSalida(g2d);
         dibujarJugador(g2d);
-
     }
 
-    private void dibujarLaberinto(Graphics2D g2d){
-        for(int i=0;i<filas;i++){
-            for (int j=0;j<columnas;j++){
-                Celda celda = controlador.getLaberinto().getCelda(i, j);
-                if (celda==null){
-                    continue;
-                }
-                boolean[] paredes = celda.getParedes();
-                int x=j*tamanoCelda;
-                int y=i*tamanoCelda;
+    private void dibujarLaberinto(Graphics2D g2d) {
+        Laberinto lab = controlador.getLaberinto();
 
-                //grosor linea
-                g2d.setColor(Color.BLUE);
-                g2d.setStroke(new BasicStroke(2));
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(new BasicStroke(3));
 
-                //Bordes exteriores
-                //Norte
-                if(paredes[0]){
-                    g2d.drawLine(x, y, x+tamanoCelda, y);
-                }
-                //Este
-                if(paredes[1]){
-                    g2d.drawLine(x+tamanoCelda, y, x+tamanoCelda, y+tamanoCelda);
-                }
-                //Sur
-                if(paredes[2]){
-                    g2d.drawLine(x, y+tamanoCelda, x+tamanoCelda, y+tamanoCelda);
-                }
-                //Oeste
-                if(paredes[3]){
-                    g2d.drawLine(x, y, x, y+tamanoCelda);
-                }
+        for (Celda celda : lab.celdas) {
+            int fila = celda.getFila();
+            int col = celda.getColumna();
+
+            int x = col * tamanoCelda;
+            int y = fila * tamanoCelda;
+
+            boolean[] p = celda.getParedes(); // N, E, S, O
+
+            // Norte
+            if (p[0]) {
+                g2d.drawLine(x, y, x + tamanoCelda, y);
+            }
+            // Este
+            if (p[1]) {
+                g2d.drawLine(x + tamanoCelda, y, x + tamanoCelda, y + tamanoCelda);
+            }
+            // Sur
+            if (p[2]) {
+                g2d.drawLine(x, y + tamanoCelda, x + tamanoCelda, y + tamanoCelda);
+            }
+            // Oeste
+            if (p[3]) {
+                g2d.drawLine(x, y, x, y + tamanoCelda);
             }
         }
-
     }
-    private void dibujarEntradaSalida(Graphics2D g2d){
-        int entradaX= controlador.getCeldaEntrada().getColumna();
-        int entradaY=controlador.getCeldaEntrada().getFila();
 
-        g2d.setColor(Color.GREEN.darker());
-        g2d.fillRect(entradaX+1,entradaY+1,tamanoCelda-2,tamanoCelda-2);
+    private void dibujarEntradaSalida(Graphics2D g2d) {
+        Celda entrada = controlador.getCeldaEntrada();
+        if (entrada != null) {
+            int eCol = entrada.getColumna();
+            int eFila = entrada.getFila();
+            g2d.setColor(new Color(0, 180, 0));
+            g2d.fillRoundRect(
+                    eCol * tamanoCelda + 3,
+                    eFila * tamanoCelda + 3,
+                    tamanoCelda - 6,
+                    tamanoCelda - 6,
+                    10, 10
+            );
+        }
 
-        int salidaX=controlador.getCeldaSalida().getColumna();
-        int salidaY=controlador.getCeldaSalida().getFila();
-        g2d.setColor(Color.RED.darker());
-        g2d.fillRect(salidaX+1,salidaY+1,tamanoCelda-2,tamanoCelda-2);
-
-
+        Celda salida = controlador.getCeldaSalida();
+        if (salida != null) {
+            int sCol = salida.getColumna();
+            int sFila = salida.getFila();
+            g2d.setColor(new Color(200, 30, 30));
+            g2d.fillRoundRect(
+                    sCol * tamanoCelda + 3,
+                    sFila * tamanoCelda + 3,
+                    tamanoCelda - 6,
+                    tamanoCelda - 6,
+                    10, 10
+            );
+        }
     }
 
     private void dibujarJugador(Graphics2D g2d){
-        int x=jugadorColumna*tamanoCelda;
-        int y=jugadorFila*tamanoCelda;
-        int margen=tamanoCelda-5;
+        int x = jugadorColumna * tamanoCelda;
+        int y = jugadorFila * tamanoCelda;
+
+        int size = tamanoCelda - 8;
 
         g2d.setColor(Color.BLUE);
-        g2d.fillOval(x+margen, y+margen,tamanoCelda-2*margen, tamanoCelda-2*margen);
-
+        g2d.fillOval(x + 4, y + 4, size, size);
     }
 
-    public void moverJugador(int dFila,int dColumna){
-        int nuevaFila=jugadorFila+dFila;
-        int nuevaColumna=jugadorColumna+dColumna;
+    public void moverJugador(int dFila, int dCol) {
+        int nuevaFila = jugadorFila + dFila;
+        int nuevaColumna = jugadorColumna + dCol;
 
-        if(nuevaFila<0 || nuevaFila>= filas || nuevaColumna <0 || nuevaColumna>=columnas){
+        if(nuevaFila < 0 || nuevaFila >= filas || nuevaColumna < 0 || nuevaColumna >= columnas){
             return;
         }
-        if(puedoMover(dFila,dColumna)){
-            jugadorFila=nuevaFila;
-            jugadorColumna=nuevaColumna;
+
+        if(puedoMover(dFila, dCol)){
+            jugadorFila = nuevaFila;
+            jugadorColumna = nuevaColumna;
         }
+
         repaint();
 
-        //Checar si gano
         if(jugadorGano()){
-
-
+            JOptionPane.showMessageDialog(this, "¡Has llegado a la salida!", "Victoria", JOptionPane.INFORMATION_MESSAGE);
         }
-
     }
 
-    private boolean puedoMover(int dFila, int dColumna){
-        Celda celdaActual=controlador.getLaberinto().getCelda(jugadorFila, jugadorColumna);
-        if(celdaActual==null){
-            return false;
-        }
-        boolean[] paredes = celdaActual.getParedes();
-        if(dFila ==-1 && dColumna==0){//Norte
-            return !paredes[0];
-        }
-        else if(dFila==0 && dColumna==1){
-            return !paredes[1];
-        }
-        else if (dFila==1 && dColumna==0){
-            return !paredes[2];
-        }
-        else if (dFila==0 && dColumna == -1){
-            return !paredes[3];
-        }
+    private boolean puedoMover(int dFila, int dCol){
+        Celda celda = controlador.getLaberinto().getCelda(jugadorFila, jugadorColumna);
+        if (celda == null) return false;
+        
+        boolean[] paredes = celda.getParedes();
+
+        if(dFila == -1 && dCol == 0) return !paredes[0];
+        if(dFila == 0 && dCol == 1) return !paredes[1];
+        if(dFila == 1 && dCol == 0) return !paredes[2];
+        if(dFila == 0 && dCol == -1) return !paredes[3];
+
         return false;
-
     }
 
-    private boolean jugadorGano(){
-        return(jugadorFila==controlador.getCeldaSalida().getFila() && jugadorColumna == controlador.getCeldaSalida().getColumna());
+    private boolean jugadorGano() {
+        Celda salida = controlador.getCeldaSalida();
+        if (salida == null) return false;
+        
+        return jugadorFila == salida.getFila() && jugadorColumna == salida.getColumna();
     }
 }
-
-
-    
-
